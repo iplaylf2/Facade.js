@@ -107,5 +107,4 @@ var prototype = {
     }
 };
 
-var ArrayS = Object.assign({}, prop, prototype);
-export default ArrayS
+export default Object.assign({}, prop, prototype);

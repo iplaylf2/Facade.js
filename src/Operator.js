@@ -5,15 +5,15 @@ var normal = {
     multiply: (x, y) => x * y,
     modulo: (x, y) => x % y,
     propIn: (key, obj) => key in obj,
-    instanceOf: (b, a) => b instanceof a,
+    instance: (b, a) => a instanceof b,
     lt: (a, b) => a < b,
     gt: (a, b) => a > b,
     lte: (a, b) => a <= b,
     gte: (a, b) => a >= b,
     eq: (a, b) => a == b,
     neq: (a, b) => a != b,
-    eqs: (a, b) => a === b,
-    neqs: (a, b) => a !== b,
+    eqs: (a, b) => Object.is(a, b),
+    neqs: (a, b) => !Object.is(a, b),
     lShift: (num, count) => num << count,
     rShift: (num, count) => num >> count,
     rShiftNS: (num, count) => num >>> count,
@@ -28,5 +28,4 @@ var specail = {
     prop: (key, obj) => obj[key]
 }
 
-var operator = Object.assign({}, normal, specail);
-export default operator
+export default Object.assign({}, normal, specail);

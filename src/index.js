@@ -1,6 +1,11 @@
-import { Facade } from './core'
+import Facade from './core'
 import { FacadeGroup } from './utility'
-import ArrayS from './Array'
 import operator from './Operator';
-Object.assign(Facade, { Array: FacadeGroup(ArrayS) }, FacadeGroup(operator));
+import TooL from './Tool'
+import ArrayS from './Array'
+
+Object.assign(Facade, FacadeGroup(operator), {
+    TooL,
+    Array: FacadeGroup(ArrayS)
+});
 export default Facade

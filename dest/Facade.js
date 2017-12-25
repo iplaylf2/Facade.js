@@ -4,25 +4,89 @@
 	(global.F = factory());
 }(this, (function () { 'use strict';
 
-var curring = (f, l) => (...args) => {
-    if (l === args.length) return f(...args);
+var { hasFlag, putFlag } = (() => {
+    var flag = Symbol('curring');
+    return {
+        hasFlag: f => f[flag] !== undefined,
+        putFlag: f => {
+            f[flag] = true;
+            return f;
+        }
+    };
+})();
+
+var curring = (f, l) => putFlag((...args) => {
     if (l > args.length) return curring((...rest) => f(...args.concat(rest)), l - args.length);
 
-    var result = f(...args.slice(0, l));
-    return curring(result, result.length)(...args.slice(l));
-};
+    var nextFunc;
+    if (l === args.length) {
+        nextFunc = f(...args);
+        if (nextFunc instanceof Function && !hasFlag(nextFunc)) return curring(nextFunc, nextFunc.length);
+        else return nextFunc;
+    }
+
+    nextFunc = f(...args.slice(0, l));
+    if (hasFlag(nextFunc)) return nextFunc(...args.slice(l));
+    else return curring(nextFunc, nextFunc.length)(...args.slice(l));
+});
 
 var Facade$1 = f => curring(f, f.length);
 
+var filp = f => (b, a) => f(a, b);
+
 var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
 
-Facade$1.pipe = Facade$1(pipe);
+//obj.func(...arg) to func(...arg)(obj)
+var forcall = func => curring((...args) => func.call(args[func.length], ...args.slice(0, func.length)), func.length + 1);
+
+Object.assign(Facade$1, {
+    isF: hasFlag,
+    filp: Facade$1(filp),
+    pipe: Facade$1(pipe),
+    forcall: Facade$1(forcall)
+});
 
 var FacadeGroup = obj => {
     var result = {};
     for (var key in obj) result[key] = Facade$1(obj[key]);
     return result;
 };
+
+var normal = {
+    add: (x, y) => x + y,
+    dec: (x, y) => x - y,
+    divide: (x, y) => x / y,
+    multiply: (x, y) => x * y,
+    modulo: (x, y) => x % y,
+    propIn: (key, obj) => key in obj,
+    instance: (b, a) => a instanceof b,
+    lt: (a, b) => a < b,
+    gt: (a, b) => a > b,
+    lte: (a, b) => a <= b,
+    gte: (a, b) => a >= b,
+    eq: (a, b) => a == b,
+    neq: (a, b) => a != b,
+    eqs: (a, b) => Object.is(a, b),
+    neqs: (a, b) => !Object.is(a, b),
+    lShift: (num, count) => num << count,
+    rShift: (num, count) => num >> count,
+    rShiftNS: (num, count) => num >>> count,
+    andB: (a, b) => a & b,
+    orB: (a, b) => a | b,
+    xorB: (a, b) => a ^ b,
+    and: (a, b) => a && b,
+    or: (a, b) => a || b,
+};
+
+var specail = {
+    prop: (key, obj) => obj[key]
+};
+
+var operator = Object.assign({}, normal, specail);
+
+var TooL = {
+    argLimit: (f, count) => (...arg) => f(...arg.slice(0, count))
+}
 
 var A = Array.prototype;
 
@@ -135,39 +199,10 @@ var prototype = {
 
 var ArrayS = Object.assign({}, prop, prototype);
 
-var normal = {
-    add: (x, y) => x + y,
-    dec: (x, y) => x - y,
-    divide: (x, y) => x / y,
-    multiply: (x, y) => x * y,
-    modulo: (x, y) => x % y,
-    propIn: (key, obj) => key in obj,
-    instanceOf: (b, a) => b instanceof a,
-    lt: (a, b) => a < b,
-    gt: (a, b) => a > b,
-    lte: (a, b) => a <= b,
-    gte: (a, b) => a >= b,
-    eq: (a, b) => a == b,
-    neq: (a, b) => a != b,
-    eqs: (a, b) => a === b,
-    neqs: (a, b) => a !== b,
-    lShift: (num, count) => num << count,
-    rShift: (num, count) => num >> count,
-    rShiftNS: (num, count) => num >>> count,
-    andB: (a, b) => a & b,
-    orB: (a, b) => a | b,
-    xorB: (a, b) => a ^ b,
-    and: (a, b) => a && b,
-    or: (a, b) => a || b,
-};
-
-var specail = {
-    prop: (key, obj) => obj[key]
-};
-
-var operator = Object.assign({}, normal, specail);
-
-Object.assign(Facade$1, { Array: FacadeGroup(ArrayS) }, FacadeGroup(operator));
+Object.assign(Facade$1, FacadeGroup(operator), {
+    TooL,
+    Array: FacadeGroup(ArrayS)
+});
 
 return Facade$1;
 
