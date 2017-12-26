@@ -9,6 +9,7 @@ var { hasFlag, putFlag } = (() => {
     };
 })();
 
+//具有传染性
 var curring = (f, l) => putFlag((...args) => {
     if (l > args.length) return curring((...rest) => f(...args.concat(rest)), l - args.length);
 
@@ -43,7 +44,7 @@ var optional = (f, ...args) => curring((...rest) => {
 
 var argLimit = (f, count) => (...arg) => f(...arg.slice(0, count));
 
-Object.assign(Facade, {
+export default Object.assign(Facade, {
     isF: hasFlag,
     filp: Facade(filp),
     pipe: Facade(pipe),
@@ -52,5 +53,3 @@ Object.assign(Facade, {
     optional,
     argLimit
 });
-
-export default Facade

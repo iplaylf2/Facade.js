@@ -15,6 +15,7 @@ var { hasFlag, putFlag } = (() => {
     };
 })();
 
+//具有传染性
 var curring = (f, l) => putFlag((...args) => {
     if (l > args.length) return curring((...rest) => f(...args.concat(rest)), l - args.length);
 
@@ -30,7 +31,7 @@ var curring = (f, l) => putFlag((...args) => {
     else return curring(nextFunc, nextFunc.length)(...args.slice(l));
 });
 
-var Facade$1 = f => curring(f, f.length);
+var Facade = f => curring(f, f.length);
 
 var filp = f => (b, a) => f(a, b);
 
@@ -49,11 +50,11 @@ var optional = (f, ...args) => curring((...rest) => {
 
 var argLimit = (f, count) => (...arg) => f(...arg.slice(0, count));
 
-Object.assign(Facade$1, {
+var Facade$1 = Object.assign(Facade, {
     isF: hasFlag,
-    filp: Facade$1(filp),
-    pipe: Facade$1(pipe),
-    forcall: Facade$1(forcall),
+    filp: Facade(filp),
+    pipe: Facade(pipe),
+    forcall: Facade(forcall),
     _,
     optional,
     argLimit
@@ -209,10 +210,10 @@ var prototype = {
 
 var ArrayS = Object.assign({}, prop, prototype);
 
-Object.assign(Facade$1, FacadeGroup(operator), {
+var index = Object.assign(Facade$1, FacadeGroup(operator), {
     Array: FacadeGroup(ArrayS)
 });
 
-return Facade$1;
+return index;
 
 })));
