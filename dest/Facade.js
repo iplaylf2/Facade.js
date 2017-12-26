@@ -92,7 +92,8 @@ var normal = {
 };
 
 var specail = {
-    prop: (key, obj) => obj[key]
+    prop: (key, obj) => obj[key],
+    type: (key, obj) => typeof obj === key
 };
 
 var operator = Object.assign({}, normal, specail);
