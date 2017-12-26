@@ -33,6 +33,15 @@ var curring = (f, l) => putFlag((...args) => {
 
 var Facade = f => curring(f, f.length);
 
+var _ = {};
+
+//F.optional([_,_,arg,_,_],f)
+var optional = (args, f) => curring((...rest) => {
+    var i = 0, real = [];
+    for (var arg of args) real.push(arg === _ ? rest[i++] : arg);
+    return f(...real);
+}, args.filter(arg => arg === _).length);
+
 var filp = f => (b, a) => f(a, b);
 
 var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
@@ -40,23 +49,15 @@ var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
 //obj.func(...arg) to func(...arg)(obj)
 var forcall = f => curring((...args) => f.call(args[f.length], ...args.slice(0, f.length)), f.length + 1);
 
-var _ = {};
-//F.optional(f,_,_,arg,_,_)
-var optional = (f, ...args) => curring((...rest) => {
-    var i = 0, real = [];
-    for (var arg of args) real.push(arg === _ ? rest[i++] : arg);
-    return f(...real);
-}, args.filter(arg => arg === _).length);
-
 var argLimit = (f, count) => (...arg) => f(...arg.slice(0, count));
 
 var Facade$1 = Object.assign(Facade, {
     isF: hasFlag,
+    _,
+    optional: Facade(optional),
     filp: Facade(filp),
     pipe: Facade(pipe),
     forcall: Facade(forcall),
-    _,
-    optional,
     argLimit
 });
 
