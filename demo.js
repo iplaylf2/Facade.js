@@ -8,3 +8,4 @@ var { map, reduce } = F.Array;
 var pluck = F.pipe([F.prop, map]);
 var sum = reduce(F.add);
 var totalCost = F.pipe([pluck('cost'), sum]);
+totalCost(basket);

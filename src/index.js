@@ -1,6 +1,6 @@
 import Facade from './core'
 import { FacadeGroup } from './utility'
-import operator from './operator';
+import operator from './Operator';
 import ArrayS from './Array'
 
 export default Object.assign(Facade, FacadeGroup(operator), {

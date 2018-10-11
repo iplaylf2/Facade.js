@@ -15,20 +15,67 @@ var { hasFlag, putFlag } = (() => {
     };
 })();
 
-//具有传染性
-var curring = (f, l) => putFlag((...args) => {
-    if (l > args.length) return curring((...rest) => f(...args.concat(rest)), l - args.length);
+var _ = {};
 
-    var nextFunc;
-    if (l === args.length) {
-        nextFunc = f(...args);
-        if (nextFunc instanceof Function && !hasFlag(nextFunc)) return curring(nextFunc, nextFunc.length);
-        else return nextFunc;
+//具有传染性
+var curring = (f, length) => putFlag((...args) => {
+    var optional = new Set();
+    var realArgs = [];
+    for (var i = 0; i !== args.length; i++) {
+        if (args[i] === _) {
+            optional.add(i);
+        } else {
+            realArgs.push(args[i]);
+        }
+    }
+    if (optional.size !== 0) {
+        var nextFunc = curring((...rest) => {
+            var right = [];
+            var left = [];
+            for (var i = 0; i !== length; i++) {
+                if (i > length - optional.size - 1) {
+                    right.push(rest[i]);
+                }
+                else {
+                    left.push(rest[i]);
+                }
+            }
+            var realArgs = [];
+            for (var i = 0; i !== length; i++) {
+                if (optional.has(i)) {
+                    realArgs.push(right.shift());
+                } else {
+                    realArgs.push(left.shift());
+                }
+            }
+            return f(...realArgs);
+        }, length);
+        if (realArgs.length === 0) {
+            return nextFunc;
+        } else {
+            return nextFunc(...realArgs);
+        }
     }
 
-    nextFunc = f(...args.slice(0, l));
-    if (hasFlag(nextFunc)) return nextFunc(...args.slice(l));
-    else return curring(nextFunc, nextFunc.length)(...args.slice(l));
+    if (length > args.length) {
+        return curring((...rest) => f(...args.concat(rest)), length - args.length);
+    }
+
+    var firstResult = f(...args.slice(0, length));
+    if (firstResult instanceof Function) {
+        var nextFunc = firstResult;
+        if (!hasFlag(nextFunc)) {
+            nextFunc = curring(nextFunc, nextFunc.length);
+        }
+        var rest = args.slice(length);
+        if (rest.length === 0) {
+            return nextFunc;
+        } else {
+            return nextFunc(...rest);
+        }
+    } else {
+        return firstResult;
+    }
 });
 
 var Facade = f => curring(f, f.length);
@@ -36,15 +83,6 @@ var Facade = f => curring(f, f.length);
 var flip = f => (b, a) => f(a, b);
 
 var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
-
-var _ = {};
-
-//F.optional([_,_,arg,_,_],f)
-var optional = (args, f) => curring((...rest) => {
-    var i = 0, real = [];
-    for (var arg of args) real.push(arg === _ ? rest[i++] : arg);
-    return f(...real);
-}, args.filter(arg => arg === _).length);
 
 //obj.func(...arg) to func(...arg)(obj)
 var forcall = f => curring((...args) => f.call(args[f.length], ...args.slice(0, f.length)), f.length + 1);
@@ -56,7 +94,6 @@ var Facade$1 = Object.assign(Facade, {
     flip: Facade(flip),
     pipe: Facade(pipe),
     _,
-    optional: Facade(optional),
     forcall: Facade(forcall),
     argLimit
 });
