@@ -35,15 +35,15 @@ F.pipe([test1, test2])(5);//60
 F.pipe([test1, test2], 5);//60
 ```
   
-F.optional 可选参数 `f(_,mid,_) → F.optional([_,mid,_],f)`
+F._ 可选参数 `f(_,mid,_) → F(f)(_,mid,_)`
   
 ``` javascript
 var test = (a, b, c) => `${a},${b},${c}`;
 var { _ } = F;
-F.optional([_, "mid", _], test)("first", "second");//"first,mid,second"
+F(test)(_, "mid", _)("first", "second");//"first,mid,second"
 //同样的curring↓
-F.optional([_, "mid", _])(test)("first", "second");//"first,mid,second"
-F.optional([_, "mid", _], test, "first", "second");//"first,mid,second"
+F(test)(_, "mid")(_)("first", "second");//"first,mid,second"
+F(test)(_)("mid")(_)("first", "second");//"first,mid,second"
 //......
 ```
   
