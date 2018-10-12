@@ -87,8 +87,6 @@ var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
 //obj.func(...arg) to func(...arg)(obj)
 var forcall = f => curring((...args) => f.call(args[f.length], ...args.slice(0, f.length)), f.length + 1);
 
-var argLimit = (f, count) => (...arg) => f(...arg.slice(0, count));
-
 var Facade$1 = Object.assign(Facade, {
     isF: hasFlag,
     flip: Facade(flip),

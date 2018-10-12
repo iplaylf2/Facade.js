@@ -56,15 +56,6 @@ F.forcall(String.prototype.repeat)(3)("233")//"233233233"
 //......
 ```
 
-F.argLimit 限制参数 假如存在接收过多的参数的情况可以使用这个。用于避免可柯里化的js函数接收过多的参数从而引起错误。
-  
-``` javascript
-var add1 = F(v => v + 1);
-// [1, 2, 3].map(add1);//由于add1接收过多的参数产生error
-[1, 2, 3].map(F.argLimit(add1, 1));//[2,3,4]
-//F.argLimit不可柯里化
-```
-
 # 其他函数
   
 Facade还内置了一些可柯里化处理的函数，他们一般是JS的操作符转变过来的。  
