@@ -52,7 +52,7 @@ var curring = (f, length) => putFlag((...args) => {
     }
 
     if (length > args.length) {
-        return curring((...rest) => f(...args.concat(rest)), length - args.length);
+        return curring(f.bind(undefined, ...args), length - args.length);
     }
 
     var firstResult = f(...args.slice(0, length));

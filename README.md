@@ -24,17 +24,7 @@ F.flip(test)("first", "second");//"second,first"
 F.flip(test, "first", "second");//"second,first" 
 F.flip(test)("first")("second");//"second,first" 
 ```
-  
-F.pipe 组合函数 `f(g(x)) → F.pipe([g,f])(x)`
-  
-``` javascript
-var test1 = a => a + 1;
-var test2 = a => a * 10;
-F.pipe([test1, test2])(5);//60
-//同样的curring↓
-F.pipe([test1, test2], 5);//60
-```
-  
+
 F._ 可选参数 `f(_,mid,_) → F(f)(_,mid,_)`
   
 ``` javascript
@@ -45,6 +35,26 @@ F(test)(_, "mid", _)("first", "second");//"first,mid,second"
 F(test)(_, "mid", _, "first")("second");//"first,mid,second"
 F(test)(_, "mid", _, "first", "second");//"first,mid,second"
 //......
+```
+  
+F.pipe 组合函数 `f(g(x)) → F.pipe([g,f])(x)`
+  
+``` javascript
+var test1 = a => a + 1;
+var test2 = a => a * 10;
+F.pipe([test1, test2])(5);//60
+//同样的curring↓
+F.pipe([test1, test2], 5);//60
+```
+
+very cool
+
+``` javascript
+var { _ } = F;
+var sub = F((a, b) => a - b);
+var div = F((a, b) => a / b);
+var func = F.pipe([sub(_, 1), div(100, _)]);
+func(5);//25
 ```
   
 F.forcall 对象调用函数 `obj.f(arg) → F.forcall(f,arg)(obj)`
