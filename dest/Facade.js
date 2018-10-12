@@ -92,8 +92,7 @@ var Facade$1 = Object.assign(Facade, {
     flip: Facade(flip),
     pipe: Facade(pipe),
     _,
-    forcall: Facade(forcall),
-    argLimit
+    forcall: Facade(forcall)
 });
 
 var FacadeGroup = obj => {

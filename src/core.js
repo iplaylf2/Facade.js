@@ -86,6 +86,5 @@ export default Object.assign(Facade, {
     flip: Facade(flip),
     pipe: Facade(pipe),
     _,
-    forcall: Facade(forcall),
-    argLimit
+    forcall: Facade(forcall)
 });
