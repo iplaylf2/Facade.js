@@ -9,29 +9,29 @@ var { hasFlag, putFlag } = (() => {
     };
 })();
 
-//optional
+//default
 var _ = {};
 
 //具有传染性
 var curring = (f, length) => putFlag((...args) => {
-    var optional = new Set();
-    var realArgs = [];
+    var defaultSet = new Set();
+    var partialArgs = [];
     for (var i = 0; i !== args.length; i++) {
         if (args[i] === _) {
-            optional.add(i);
+            defaultSet.add(i);
         } else {
-            realArgs.push(args[i]);
+            partialArgs.push(args[i]);
         }
     }
-    if (optional.size !== 0) {
-        if (realArgs.length === 0) {
+    if (defaultSet.size !== 0) {
+        if (partialArgs.length === 0) {
             return f;
         }
         var nextFunc = curring((...rest) => {
             var right = [];
             var left = [];
             for (var i = 0; i !== length; i++) {
-                if (i > length - optional.size - 1) {
+                if (i > length - defaultSet.size - 1) {
                     right.push(rest[i]);
                 }
                 else {
@@ -40,7 +40,7 @@ var curring = (f, length) => putFlag((...args) => {
             }
             var realArgs = [];
             for (var i = 0; i !== length; i++) {
-                if (optional.has(i)) {
+                if (defaultSet.has(i)) {
                     realArgs.push(right.shift());
                 } else {
                     realArgs.push(left.shift());
@@ -48,7 +48,7 @@ var curring = (f, length) => putFlag((...args) => {
             }
             return f(...realArgs);
         }, length);
-        return nextFunc(...realArgs);
+        return nextFunc(...partialArgs);
     }
 
     if (length > args.length) {

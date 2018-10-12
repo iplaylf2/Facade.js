@@ -25,7 +25,7 @@ F.flip(test, "first", "second");//"second,first"
 F.flip(test)("first")("second");//"second,first" 
 ```
 
-F._ 可选参数 `f(_,mid,_) → F(f)(_,mid,_)`
+F._ 部分参数 `f(_,mid,_) → F(f)(_,mid,_)`
   
 ``` javascript
 var test = (a, b, c) => `${a},${b},${c}`;
