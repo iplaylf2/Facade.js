@@ -15,6 +15,7 @@ var { hasFlag, putFlag } = (() => {
     };
 })();
 
+//optional
 var _ = {};
 
 //具有传染性
@@ -29,6 +30,9 @@ var curring = (f, length) => putFlag((...args) => {
         }
     }
     if (optional.size !== 0) {
+        if (realArgs.length === 0) {
+            return f;
+        }
         var nextFunc = curring((...rest) => {
             var right = [];
             var left = [];
@@ -50,11 +54,7 @@ var curring = (f, length) => putFlag((...args) => {
             }
             return f(...realArgs);
         }, length);
-        if (realArgs.length === 0) {
-            return nextFunc;
-        } else {
-            return nextFunc(...realArgs);
-        }
+        return nextFunc(...realArgs);
     }
 
     if (length > args.length) {

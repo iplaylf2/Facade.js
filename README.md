@@ -42,8 +42,8 @@ var test = (a, b, c) => `${a},${b},${c}`;
 var { _ } = F;
 F(test)(_, "mid", _)("first", "second");//"first,mid,second"
 //同样的curring↓
-F(test)(_, "mid")(_)("first", "second");//"first,mid,second"
-F(test)(_)("mid")(_)("first", "second");//"first,mid,second"
+F(test)(_, "mid", _, "first")("second");//"first,mid,second"
+F(test)(_, "mid", _, "first", "second");//"first,mid,second"
 //......
 ```
   
