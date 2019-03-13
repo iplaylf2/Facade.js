@@ -4,98 +4,164 @@
     (global = global || self, global.F = factory());
 }(this, function () { 'use strict';
 
-    var { hasFlag, putFlag } = (() => {
-        var flag = Symbol('curring');
-        return {
-            hasFlag: f => f[flag] !== undefined,
-            putFlag: f => {
-                f[flag] = true;
-                return f;
+    class CurringProxy {
+        constructor(func, length, argument) {
+            Object.assign(this, {
+                func,
+                boundArgument: argument,
+                length
+            });
+        }
+        call(...args) {
+            var { func, length } = this;
+            var argumentSP = this.boundArgument.merge(args).compress(length);
+
+            while (argumentSP.length >= length) {
+                const [real, restArgumentSP] = argumentSP.splice(length);
+                const result = func(...real);
+
+                if (result instanceof Function) {
+                    func = result;
+                    length = result[curring];
+                    if (length === undefined) {
+                        length = result.length;
+                    }
+                    argumentSP = restArgumentSP.compress(length);
+                } else {
+                    return result;
+                }
             }
-        };
+            return new CurringProxy(func, length, argumentSP).makeFunction();
+        }
+        makeFunction() {
+            const call = this.call.bind(this);
+            call[curring] = this.length;
+            return call;
+        }
+    }
+    const curring = Symbol('curring');
+
+    const [ArgumentSP, placeholder] = (() => {
+        class ArgumentSP {
+            static make(property) {
+                return Object.create(ArgumentSP.prototype, Object.getOwnPropertyDescriptors(property));
+            }
+            constructor(argumentList) {
+                const slotList = [];
+                for (var [index, arg] of argumentList.entries()) {
+                    if (arg === placeholder) {
+                        slotList.push(index);
+                    }
+                }
+
+                Object.assign(this, {
+                    argumentList,
+                    slotList,
+                });
+            }
+            merge(restArgument) {
+                const argumentList = this.argumentList.concat();
+                const slotList = this.slotList;
+                var newSlotList = [];
+
+                for (var i = 0; i !== slotList.length && i !== restArgument.length; i++) {
+                    let index = slotList[i];
+                    let arg = restArgument[i];
+                    if (arg === placeholder) {
+                        newSlotList.push(index);
+                    } else {
+                        argumentList[index] = arg;
+                    }
+                }
+                newSlotList = newSlotList.concat(slotList.slice(i));
+
+                const offset = argumentList.length;
+                for (; i < restArgument.length; i++) {
+                    let arg = restArgument[i];
+                    if (arg === placeholder) {
+                        newSlotList.push(i + offset);
+                    }
+                    argumentList.push(arg);
+                }
+
+                return ArgumentSP.make({
+                    argumentList,
+                    slotList: newSlotList,
+                });
+            }
+            compress(length) {
+                const restArgument = this.argumentList.concat();
+                var newArgumentList = restArgument.splice(0, length);
+                var newSlotList = this.slotList.filter(index => index < length);
+                
+                var slotIndex = 0;
+                for (var [index, arg] of restArgument.entries()) {
+                    if (newSlotList.length === 0) {
+                        break;
+                    }
+                    if (arg !== placeholder) {
+                        newArgumentList[newSlotList.splice(slotIndex, slotIndex + 1)] = arg;
+                    }
+                    slotIndex++;
+                    if (slotIndex >= newSlotList.length) {
+                        slotIndex = 0;
+                    }
+                }
+
+                newArgumentList = newArgumentList.concat(restArgument.slice(index, restArgument.length));
+
+                return new ArgumentSP(newArgumentList);
+            }
+            splice(length) {
+                const argumentList = this.argumentList.concat();
+                const leftArgument = argumentList.splice(0, length);
+                const slotList = this.slotList.map(index => index - length);
+
+                const rest = ArgumentSP.make({
+                    argumentList,
+                    slotList,
+                });
+                return [leftArgument, rest];
+            }
+            get length() {
+                return this.slotList.length === 0 ? this.argumentList.length : this.slotList[0];
+            }
+        }
+        const placeholder = {};
+        return [ArgumentSP, placeholder];
     })();
 
-    //default
-    var _ = {};
+    var facade = function (func) {
+        return new CurringProxy(func, func.length, new ArgumentSP([])).makeFunction();
+    };
 
-    //具有传染性
-    var curring = (f, length) => putFlag((...args) => {
-        var defaultSet = new Set();
-        var partialArgs = [];
-        for (var i = 0; i !== args.length; i++) {
-            if (args[i] === _) {
-                defaultSet.add(i);
-            } else {
-                partialArgs.push(args[i]);
-            }
-        }
-        if (defaultSet.size !== 0) {
-            if (partialArgs.length === 0) {
-                return f;
-            }
-            var nextFunc = curring((...rest) => {
-                var right = [];
-                var left = [];
-                for (var i = 0; i !== length; i++) {
-                    if (i > length - defaultSet.size - 1) {
-                        right.push(rest[i]);
-                    }
-                    else {
-                        left.push(rest[i]);
-                    }
-                }
-                var realArgs = [];
-                for (var i = 0; i !== length; i++) {
-                    if (defaultSet.has(i)) {
-                        realArgs.push(right.shift());
-                    } else {
-                        realArgs.push(left.shift());
-                    }
-                }
-                return f(...realArgs);
-            }, length);
-            return nextFunc(...partialArgs);
-        }
+    var flip = function (func) {
+        return function (a, b) {
+            return func(b, a);
+        };
+    };
 
-        if (length > args.length) {
-            return curring(f.bind(undefined, ...args), length - args.length);
-        }
-
-        var firstResult = f(...args.slice(0, length));
-        if (firstResult instanceof Function) {
-            var nextFunc = firstResult;
-            if (!hasFlag(nextFunc)) {
-                nextFunc = curring(nextFunc, nextFunc.length);
-            }
-            var rest = args.slice(length);
-            if (rest.length === 0) {
-                return nextFunc;
-            } else {
-                return nextFunc(...rest);
-            }
-        } else {
-            return firstResult;
-        }
-    });
-
-    var Facade = f => curring(f, f.length);
-
-    var flip = f => (b, a) => f(a, b);
-
-    var pipe = funcs => funcs.reduce((g, f) => arg => f(g(arg)));
+    var pipe = function (funcs) {
+        return funcs.reduce((g, f) => arg => f(g(arg)));
+    };
 
     //obj.func(...arg) to func(...arg)(obj)
-    var forcall = f => curring((...args) => f.call(args[f.length], ...args.slice(0, f.length)), f.length + 1);
+    var forcall = function (func) {
+        const length = func.length;
+        const call = function (...args) {
+            return func.call(args[length], ...args.slice(0, length));
+        };
+        return new CurringProxy(call, length + 1, new ArgumentSP([])).makeFunction();
+    };
 
-    var Facade$1 = Object.assign(Facade, {
-        isF: hasFlag,
-        flip: Facade(flip),
-        pipe: Facade(pipe),
-        _,
-        forcall: Facade(forcall)
+    var Facade = Object.assign(facade, {
+        flip: facade(flip),
+        pipe: facade(pipe),
+        _: placeholder,
+        forcall: facade(forcall)
     });
 
-    var normal = {
+    const normal = {
         add(x, y) {
             return x + y;
         },
@@ -170,7 +236,7 @@
         }
     };
 
-    var specail = {
+    const specail = {
         prop(key, obj) {
             return obj[key];
         },
@@ -181,15 +247,15 @@
 
     var operator = Object.assign({}, normal, specail);
 
-    var A = Array.prototype;
+    const A = Array.prototype;
 
-    var prop = {
+    const prop = {
         length(enumerable) {
             return A.reduce.call(enumerable, count => count + 1, 0);
         }
     };
 
-    var prototype = {
+    const prototype = {
         concat(a, b) {
             return A.concat.call(a, b);
         },
@@ -200,7 +266,7 @@
         },
         full(content, count) { return Array(count).fill(content); },
         filter(predicate, enumerable) {
-            var result = [];
+            const result = [];
             for (var item of enumerable)
                 if (predicate(item)) result.push(item);
             return result;
@@ -233,12 +299,12 @@
             return A.lastIndexOf.call(enumerable, element, start);
         },
         map(cb, enumerable) {
-            var result = [];
+            const result = [];
             for (var item of enumerable) result.push(cb(item));
             return result;
         },
         reduce(cb, enumerable) {
-            var iterator = enumerable[Symbol.iterator](), first = iterator.next();
+            const iterator = enumerable[Symbol.iterator](), first = iterator.next();
             if (first.done) return;
 
             var result = first.value;
@@ -251,10 +317,10 @@
             return result;
         },
         reduceRight(cb, enumerable) {
-            var source = [];
+            const source = [];
             for (var item of enumerable) source.push(item);
 
-            var iterator = source[Symbol.iterator](), first = iterator.next();
+            const iterator = source[Symbol.iterator](), first = iterator.next();
             if (first.done) return;
 
             var result = first.value;
@@ -262,7 +328,7 @@
             return result;
         },
         reduceRightI(cb, init, enumerable) {
-            var source = [];
+            const source = [];
             for (var item of enumerable) source.push(item);
 
             var result = init;
@@ -270,7 +336,7 @@
             return result;
         },
         reverse(enumerable) {
-            var result = [];
+            const result = [];
             for (var item of enumerable) result.push(item);
             return result;
         },
@@ -283,7 +349,7 @@
             return false;
         },
         sort: function sort(enumerable) {
-            var l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
+            const l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
             if (first.done) return [];
 
             for (var item of iterator) {
@@ -293,7 +359,7 @@
             return [...sort(l), first.value, ...sort(r)];
         },
         sortC: function sort(comparer, enumerable) {
-            var l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
+            const l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
             if (first.done) return [];
 
             for (var item of iterator) {
@@ -306,13 +372,13 @@
 
     var ArrayS = Object.assign({}, prop, prototype);
 
-    var FacadeGroup = function (obj) {
-        var result = {};
-        for (var key in obj) result[key] = Facade$1(obj[key]);
+    const FacadeGroup = function (obj) {
+        const result = {};
+        for (var key in obj) result[key] = Facade(obj[key]);
         return result;
     };
 
-    var index = Object.assign(Facade$1,
+    var index = Object.assign(Facade,
         FacadeGroup(operator),
         {
             Array: FacadeGroup(ArrayS)
