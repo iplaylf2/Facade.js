@@ -1,4 +1,4 @@
-var normal = {
+const normal = {
     add(x, y) {
         return x + y;
     },
@@ -73,7 +73,7 @@ var normal = {
     }
 };
 
-var specail = {
+const specail = {
     prop(key, obj) {
         return obj[key];
     },

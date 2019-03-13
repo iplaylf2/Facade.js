@@ -1,12 +1,12 @@
-var A = Array.prototype;
+const A = Array.prototype;
 
-var prop = {
+const prop = {
     length(enumerable) {
         return A.reduce.call(enumerable, count => count + 1, 0);
     }
 };
 
-var prototype = {
+const prototype = {
     concat(a, b) {
         return A.concat.call(a, b);
     },
@@ -17,7 +17,7 @@ var prototype = {
     },
     full(content, count) { return Array(count).fill(content); },
     filter(predicate, enumerable) {
-        var result = [];
+        const result = [];
         for (var item of enumerable)
             if (predicate(item)) result.push(item);
         return result;
@@ -50,12 +50,12 @@ var prototype = {
         return A.lastIndexOf.call(enumerable, element, start);
     },
     map(cb, enumerable) {
-        var result = [];
+        const result = [];
         for (var item of enumerable) result.push(cb(item));
         return result;
     },
     reduce(cb, enumerable) {
-        var iterator = enumerable[Symbol.iterator](), first = iterator.next();
+        const iterator = enumerable[Symbol.iterator](), first = iterator.next();
         if (first.done) return;
 
         var result = first.value;
@@ -68,10 +68,10 @@ var prototype = {
         return result;
     },
     reduceRight(cb, enumerable) {
-        var source = [];
+        const source = [];
         for (var item of enumerable) source.push(item);
 
-        var iterator = source[Symbol.iterator](), first = iterator.next();
+        const iterator = source[Symbol.iterator](), first = iterator.next();
         if (first.done) return;
 
         var result = first.value;
@@ -79,7 +79,7 @@ var prototype = {
         return result;
     },
     reduceRightI(cb, init, enumerable) {
-        var source = [];
+        const source = [];
         for (var item of enumerable) source.push(item);
 
         var result = init;
@@ -87,7 +87,7 @@ var prototype = {
         return result;
     },
     reverse(enumerable) {
-        var result = [];
+        const result = [];
         for (var item of enumerable) result.push(item);
         return result;
     },
@@ -100,7 +100,7 @@ var prototype = {
         return false;
     },
     sort: function sort(enumerable) {
-        var l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
+        const l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
         if (first.done) return [];
 
         for (var item of iterator) {
@@ -110,7 +110,7 @@ var prototype = {
         return [...sort(l), first.value, ...sort(r)];
     },
     sortC: function sort(comparer, enumerable) {
-        var l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
+        const l = [], r = [], iterator = enumerable[Symbol.iterator](), first = iterator.next();
         if (first.done) return [];
 
         for (var item of iterator) {
