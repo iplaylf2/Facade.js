@@ -1,0 +1,24 @@
+{
+  "name": "facade.js",
+  "version": "1.0.0",
+  "description": "函数式风格编程",
+  "main": "build.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Iplaylf2/Facade.js.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Iplaylf2/Facade.js/issues"
+  },
+  "homepage": "https://github.com/Iplaylf2/Facade.js#readme",
+  "devDependencies": {
+    "rollup": "^1.6.0"
+  }
+}

@@ -1,6 +1,6 @@
-import Facade from './core'
-import operator from './Operator';
-import ArrayS from './Array'
+import Facade from './core.js'
+import operator from './Operator.js';
+import ArrayS from './Array.js'
 
 var FacadeGroup = function (obj) {
     var result = {};
