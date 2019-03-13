@@ -1,32 +1,85 @@
 var normal = {
-    add: (x, y) => x + y,
-    dec: (x, y) => x - y,
-    divide: (x, y) => x / y,
-    multiply: (x, y) => x * y,
-    modulo: (x, y) => x % y,
-    propIn: (key, obj) => key in obj,
-    instance: (b, a) => a instanceof b,
-    lt: (a, b) => a < b,
-    gt: (a, b) => a > b,
-    lte: (a, b) => a <= b,
-    gte: (a, b) => a >= b,
-    eq: (a, b) => a == b,
-    neq: (a, b) => a != b,
-    eqs: (a, b) => Object.is(a, b),
-    neqs: (a, b) => !Object.is(a, b),
-    lShift: (num, count) => num << count,
-    rShift: (num, count) => num >> count,
-    rShiftNS: (num, count) => num >>> count,
-    andB: (a, b) => a & b,
-    orB: (a, b) => a | b,
-    xorB: (a, b) => a ^ b,
-    and: (a, b) => a && b,
-    or: (a, b) => a || b,
+    add(x, y) {
+        return x + y;
+    },
+    dec(x, y) {
+        return x - y;
+    },
+    divide(x, y) {
+        return x / y;
+    },
+    multiply(x, y) {
+        return x * y;
+    },
+    modulo(x, y) {
+        return x % y;
+    },
+    propIn(key, obj) {
+        return key in obj;
+    },
+    instance(b, a) {
+        return a instanceof b;
+    },
+    lt(a, b) {
+        return a < b;
+    },
+    gt(a, b) {
+        return a > b;
+    },
+    lte(a, b) {
+        return a <= b;
+    },
+    gte(a, b) {
+        return a >= b;
+    },
+    eq(a, b) {
+        return a == b;
+    },
+    neq(a, b) {
+        return a != b;
+    },
+    eqs(a, b) {
+        return Object.is(a, b);
+    },
+    neqs(a, b) {
+        return !Object.is(a, b);
+    },
+    lShift(num, count) {
+        return num << count;
+    },
+    rShift(num, count) {
+        return num >> count;
+    },
+    rShiftNS(num, count) {
+        return num >>> count;
+    },
+    andB(a, b) {
+        return a & b;
+    },
+    orB(a, b) {
+        return a | b;
+    },
+    xorB(a, b) {
+        return a ^ b;
+    },
+    and(a, b) {
+        return a && b;
+    },
+    or(a, b) {
+        return a || b;
+    },
+    not(a) {
+        return !a;
+    }
 };
 
 var specail = {
-    prop: (key, obj) => obj[key],
-    type: (key, obj) => typeof obj === key
+    prop(key, obj) {
+        return obj[key];
+    },
+    type(key, obj) {
+        return typeof obj === key;
+    },
 }
 
 export default Object.assign({}, normal, specail);

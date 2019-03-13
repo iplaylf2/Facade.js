@@ -1,28 +1,32 @@
 var A = Array.prototype;
 
 var prop = {
-    length: enumerable => A.reduce.call(enumerable, count => count + 1, 0)
+    length(enumerable) {
+        return A.reduce.call(enumerable, count => count + 1, 0);
+    }
 };
 
 var prototype = {
-    concat: (a, b) => A.concat.call(a, b),
-    every: (predicate, enumerable) => {
+    concat(a, b) {
+        return A.concat.call(a, b);
+    },
+    every(predicate, enumerable) {
         for (var item of enumerable)
             if (!predicate(item)) return false;
         return true;
     },
-    full: (content, count) => Array(count).fill(content),
-    filter: (predicate, enumerable) => {
+    full(content, count) { return Array(count).fill(content); },
+    filter(predicate, enumerable) {
         var result = [];
         for (var item of enumerable)
             if (predicate(item)) result.push(item);
         return result;
     },
-    find: (predicate, enumerable) => {
+    find(predicate, enumerable) {
         for (var item of enumerable)
             if (predicate(item)) return item;
     },
-    findIndex: (predicate, enumerable) => {
+    findIndex(predicate, enumerable) {
         var i = -1;
         for (var item of enumerable) {
             i++;
@@ -30,19 +34,27 @@ var prototype = {
         }
         return i;
     },
-    forEach: (cb, enumerable) => {
+    forEach(cb, enumerable) {
         for (var item of enumerable) cb(item);
     },
-    includes: (element, start, enumerable) => A.includes.call(enumerable, element, start),
-    indexOf: (element, start, enumerable) => A.indexOf.call(enumerable, element, start),
-    join: (separator, enumerable) => A.join.call(enumerable, separator),
-    lastIndexOf: (element, start, enumerable) => A.lastIndexOf.call(enumerable, element, start),
-    map: (cb, enumerable) => {
+    includes(element, start, enumerable) {
+        return A.includes.call(enumerable, element, start);
+    },
+    indexOf(element, start, enumerable) {
+        return A.indexOf.call(enumerable, element, start);
+    },
+    join(separator, enumerable) {
+        return A.join.call(enumerable, separator);
+    },
+    lastIndexOf(element, start, enumerable) {
+        return A.lastIndexOf.call(enumerable, element, start);
+    },
+    map(cb, enumerable) {
         var result = [];
         for (var item of enumerable) result.push(cb(item));
         return result;
     },
-    reduce: (cb, enumerable) => {
+    reduce(cb, enumerable) {
         var iterator = enumerable[Symbol.iterator](), first = iterator.next();
         if (first.done) return;
 
@@ -50,12 +62,12 @@ var prototype = {
         for (var item of iterator) result = cb(result, item);
         return result;
     },
-    reduceI: (cb, init, enumerable) => {
+    reduceI(cb, init, enumerable) {
         var result = init;
         for (var item of enumerable) result = cb(result, item);
         return result;
     },
-    reduceRight: (cb, enumerable) => {
+    reduceRight(cb, enumerable) {
         var source = [];
         for (var item of enumerable) source.push(item);
 
@@ -66,7 +78,7 @@ var prototype = {
         for (var item of iterator) result = cb(result, item);
         return result;
     },
-    reduceRightI: (cb, init, enumerable) => {
+    reduceRightI(cb, init, enumerable) {
         var source = [];
         for (var item of enumerable) source.push(item);
 
@@ -74,13 +86,15 @@ var prototype = {
         for (var item of source) result = cb(result, item);
         return result;
     },
-    reverse: enumerable => {
+    reverse(enumerable) {
         var result = [];
         for (var item of enumerable) result.push(item);
         return result;
     },
-    slice: (start, end, enumerable) => A.slice.call(enumerable, start, end),
-    some: (predicate, enumerable) => {
+    slice(start, end, enumerable) {
+        return A.slice.call(enumerable, start, end);
+    },
+    some(predicate, enumerable) {
         for (var item of enumerable)
             if (predicate(item)) return true;
         return false;

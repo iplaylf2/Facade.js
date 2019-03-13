@@ -1,8 +1,16 @@
 import Facade from './core'
-import { FacadeGroup } from './utility'
 import operator from './Operator';
 import ArrayS from './Array'
 
-export default Object.assign(Facade, FacadeGroup(operator), {
-    Array: FacadeGroup(ArrayS)
-});
+var FacadeGroup = function (obj) {
+    var result = {};
+    for (var key in obj) result[key] = Facade(obj[key]);
+    return result;
+};
+
+export default Object.assign(Facade,
+    FacadeGroup(operator),
+    {
+        Array: FacadeGroup(ArrayS)
+    }
+);
