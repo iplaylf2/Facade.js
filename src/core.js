@@ -1,5 +1,5 @@
-import CurringProxy from './Core/CurringProxy.js'
-import { ArgumentSP, placeholder } from './Core/ArgumentSP.js'
+import CurringProxy from './facade/CurringProxy.js'
+import { ArgumentSP, placeholder } from './facade/ArgumentSP.js'
 
 const facade = function (func) {
     return new CurringProxy(func, func.length, new ArgumentSP([])).makeFunction();
