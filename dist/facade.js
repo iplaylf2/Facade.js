@@ -22,10 +22,7 @@
 
                 if (result instanceof Function) {
                     func = result;
-                    length = result[curring];
-                    if (length === undefined) {
-                        length = result.length;
-                    }
+                    length = result.length;
                     argumentSP = restArgumentSP.compress(length);
                 } else {
                     return result;
@@ -35,11 +32,12 @@
         }
         makeFunction() {
             const call = this.call.bind(this);
-            call[curring] = this.length;
+            Object.defineProperty(call, 'length', {
+                value: this.length - this.boundArgument.length
+            });
             return call;
         }
     }
-    const curring = Symbol('curring');
 
     const [ArgumentSP, placeholder] = (() => {
         class ArgumentSP {
