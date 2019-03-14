@@ -50,16 +50,17 @@ export const [ArgumentSP, placeholder] = (() => {
             const restArgument = this.argumentList.concat();
             var newArgumentList = restArgument.splice(0, length);
             var newSlotList = this.slotList.filter(index => index < length);
-            
+
             var slotIndex = 0;
             for (var [index, arg] of restArgument.entries()) {
                 if (newSlotList.length === 0) {
                     break;
                 }
-                if (arg !== placeholder) {
-                    newArgumentList[newSlotList.splice(slotIndex, slotIndex + 1)] = arg;
+                if (arg === placeholder) {
+                    slotIndex++;
+                } else {
+                    newArgumentList[newSlotList.splice(slotIndex, slotIndex + 1)[0]] = arg;
                 }
-                slotIndex++;
                 if (slotIndex >= newSlotList.length) {
                     slotIndex = 0;
                 }
