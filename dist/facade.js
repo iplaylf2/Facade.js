@@ -16,7 +16,7 @@
             var { func, length } = this;
             var argumentSP = this.boundArgument.merge(args).compress(length);
 
-            while (argumentSP.length >= length) {
+            while (argumentSP.left >= length) {
                 const [real, restArgumentSP] = argumentSP.splice(length);
                 const result = func(...real);
 
@@ -33,7 +33,7 @@
         makeFunction() {
             const call = this.call.bind(this);
             Object.defineProperty(call, 'length', {
-                value: this.length - this.boundArgument.length
+                value: this.length - this.boundArgument.readyLength(this.length)
             });
             return call;
         }
@@ -58,58 +58,51 @@
                 });
             }
             merge(restArgument) {
-                const argumentList = this.argumentList.concat();
-                const slotList = this.slotList;
-                var newSlotList = [];
+                const argumentList = this.argumentList.concat(restArgument);
+                const slotList = this.slotList.concat();
 
-                for (var i = 0; i !== slotList.length && i !== restArgument.length; i++) {
-                    let index = slotList[i];
-                    let arg = restArgument[i];
+                const offset = this.argumentList.length;
+                for (var [index, arg] of restArgument.entries()) {
                     if (arg === placeholder) {
-                        newSlotList.push(index);
-                    } else {
-                        argumentList[index] = arg;
+                        slotList.push(index + offset);
                     }
                 }
-                newSlotList = newSlotList.concat(slotList.slice(i));
 
-                const offset = argumentList.length;
-                for (; i < restArgument.length; i++) {
+                return ArgumentSP.make({
+                    argumentList,
+                    slotList
+                });
+            }
+            compress(expect) {
+                const restArgument = this.argumentList.concat();
+                const argumentList = restArgument.splice(0, expect);
+                const slotList = this.slotList.filter(index => index < expect);
+
+                var slotIndex = 0;
+                for (var i = 0; i !== restArgument.length && slotList.length !== 0; i++) {
                     let arg = restArgument[i];
                     if (arg === placeholder) {
-                        newSlotList.push(i + offset);
+                        slotIndex++;
+                    } else {
+                        argumentList[slotList.splice(slotIndex, slotIndex + 1)[0]] = arg;
+                    }
+                    if (slotIndex >= slotList.length) {
+                        slotIndex = 0;
+                    }
+                }
+
+                const offset = argumentList.length;
+                for (var [index, arg] of restArgument.slice(i, restArgument.length).entries()) {
+                    if (arg === placeholder) {
+                        slotList.push(index + offset);
                     }
                     argumentList.push(arg);
                 }
 
                 return ArgumentSP.make({
                     argumentList,
-                    slotList: newSlotList,
+                    slotList
                 });
-            }
-            compress(length) {
-                const restArgument = this.argumentList.concat();
-                var newArgumentList = restArgument.splice(0, length);
-                var newSlotList = this.slotList.filter(index => index < length);
-
-                var slotIndex = 0;
-                for (var [index, arg] of restArgument.entries()) {
-                    if (newSlotList.length === 0) {
-                        break;
-                    }
-                    if (arg === placeholder) {
-                        slotIndex++;
-                    } else {
-                        newArgumentList[newSlotList.splice(slotIndex, slotIndex + 1)[0]] = arg;
-                    }
-                    if (slotIndex >= newSlotList.length) {
-                        slotIndex = 0;
-                    }
-                }
-
-                newArgumentList = newArgumentList.concat(restArgument.slice(index, restArgument.length));
-
-                return new ArgumentSP(newArgumentList);
             }
             splice(length) {
                 const argumentList = this.argumentList.concat();
@@ -122,7 +115,24 @@
                 });
                 return [leftArgument, rest];
             }
-            get length() {
+            readyLength(expect) {
+                if (expect > this.argumentList.length) {
+                    return this.argumentList.length - this.slotList.length;
+                }
+                else {
+                    var hole = 0;
+                    for (var index of this.slotList) {
+                        if (expect > index) {
+                            hole++;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    return expect - hole;
+                }
+            }
+            get left() {
                 return this.slotList.length === 0 ? this.argumentList.length : this.slotList[0];
             }
         }
@@ -130,22 +140,22 @@
         return [ArgumentSP, placeholder];
     })();
 
-    var facade = function (func) {
+    const facade = function (func) {
         return new CurringProxy(func, func.length, new ArgumentSP([])).makeFunction();
     };
 
-    var flip = function (func) {
+    const flip = function (func) {
         return function (a, b) {
             return func(b, a);
         };
     };
 
-    var pipe = function (funcs) {
+    const pipe = function (funcs) {
         return funcs.reduce((g, f) => arg => f(g(arg)));
     };
 
     //obj.func(...arg) to func(...arg)(obj)
-    var forcall = function (func) {
+    const forcall = function (func) {
         const length = func.length;
         const call = function (...args) {
             return func.call(args[length], ...args.slice(0, length));
